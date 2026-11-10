@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Empty "Allowed Point of Sale" on the user = no restriction -->
+    <record id="rule_grg_pos_config_user" model="ir.rule">
+        <field name="name">GRG: allowed Point of Sale only</field>
+        <field name="model_id" ref="point_of_sale.model_pos_config"/>
+        <field name="domain_force">[('id', 'in', user.grg_pos_config_ids.ids)] if user.grg_pos_config_ids else [(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('point_of_sale.group_pos_user'))]"/>
+    </record>
+    <record id="rule_grg_pos_session_user" model="ir.rule">
+        <field name="name">GRG: sessions of allowed Point of Sale only</field>
+        <field name="model_id" ref="point_of_sale.model_pos_session"/>
+        <field name="domain_force">[('config_id', 'in', user.grg_pos_config_ids.ids)] if user.grg_pos_config_ids else [(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('point_of_sale.group_pos_user'))]"/>
+    </record>
+    <record id="rule_grg_pos_order_user" model="ir.rule">
+        <field name="name">GRG: orders of allowed Point of Sale only</field>
+        <field name="model_id" ref="point_of_sale.model_pos_order"/>
+        <field name="domain_force">[('config_id', 'in', user.grg_pos_config_ids.ids)] if user.grg_pos_config_ids else [(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('point_of_sale.group_pos_user'))]"/>
+    </record>
+    <record id="rule_grg_pos_order_report_user" model="ir.rule">
+        <field name="name">GRG: sales report of allowed Point of Sale only</field>
+        <field name="model_id" ref="point_of_sale.model_report_pos_order"/>
+        <field name="domain_force">[('config_id', 'in', user.grg_pos_config_ids.ids)] if user.grg_pos_config_ids else [(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('point_of_sale.group_pos_user'))]"/>
+    </record>
+</odoo>

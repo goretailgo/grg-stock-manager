@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_grg_transfer" model="ir.actions.report">
+        <field name="name">Stock Transfer Report</field>
+        <field name="model">stock.picking</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">grg_stock_transfer.report_grg_transfer</field>
+        <field name="report_file">grg_stock_transfer.report_grg_transfer</field>
+        <field name="print_report_name">'Stock-Transfer-%s' % (object.name or '').replace('/', '-')</field>
+        <field name="binding_model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_grg_transfer">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <t t-set="lines" t-value="o.grg_report_lines()"/>
+                    <t t-set="src" t-value="o.location_id.warehouse_id"/>
+                    <t t-set="dst" t-value="o.location_dest_id.warehouse_id"/>
+                    <t t-set="cur" t-value="o.company_id.currency_id"/>
+                    <div class="page" style="font-size: 12px;">
+                        <h4 class="text-center mb-3">STOCK TRANSFER REPORT / DELIVERY CHALLAN</h4>
+
+                        <table class="table table-sm table-borderless mb-3">
+                            <tr>
+                                <td style="width: 50%;">
+                                    <strong>Transfer No:</strong> <span t-out="o.name"/><br/>
+                                    <strong>Date:</strong>
+                                    <span t-out="context_timestamp(o.date_done or o.scheduled_date).strftime('%d-%m-%Y %I:%M %p')"/><br/>
+                                    <strong>Status:</strong> <span t-out="dict(o._fields['state'].selection).get(o.state)"/><br/>
+                                    <strong>Transferred By:</strong> <span t-out="o.create_uid.name"/>
+                                </td>
+                                <td style="width: 50%;">
+                                    <t t-if="o.company_id.vat"><strong>GSTIN:</strong> <span t-out="o.company_id.vat"/><br/></t>
+                                    <strong>Items:</strong> <span t-out="len(lines)"/><br/>
+                                    <strong>Total Qty:</strong> <span t-out="'%g' % sum(l['qty'] for l in lines)"/>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <table class="table table-sm table-bordered mb-3">
+                            <thead>
+                                <tr style="background-color: #f2f2f2;">
+                                    <th style="width: 50%;">FROM (Source)</th>
+                                    <th style="width: 50%;">TO (Destination)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <strong t-out="src.name or o.location_id.display_name"/>
+                                        <t t-if="src"> (<span t-out="src.code"/>)</t><br/>
+                                        <span t-out="o.location_id.complete_name"/><br/>
+                                        <span t-if="src.partner_id" t-out="', '.join(filter(None, [src.partner_id.street, src.partner_id.street2, src.partner_id.city, src.partner_id.zip]))"/>
+                                    </td>
+                                    <td>
+                                        <strong t-out="dst.name or o.location_dest_id.display_name"/>
+                                        <t t-if="dst"> (<span t-out="dst.code"/>)</t><br/>
+                                        <span t-out="o.location_dest_id.complete_name"/><br/>
+                                        <span t-if="dst.partner_id" t-out="', '.join(filter(None, [dst.partner_id.street, dst.partner_id.street2, dst.partner_id.city, dst.partner_id.zip]))"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr style="background-color: #f2f2f2;">
+                                    <th class="text-center" style="width: 5%;">#</th>
+                                    <th>Product</th>
+                                    <th>SKU / Barcode</th>
+                                    <th>HSN</th>
+                                    <th class="text-end">Qty</th>
+                                    <th>UoM</th>
+                                    <th class="text-end">Unit Cost</th>
+                                    <th class="text-end">Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="lines" t-as="l">
+                                    <td class="text-center" t-out="l_index + 1"/>
+                                    <td t-out="l['name']"/>
+                                    <td>
+                                        <span t-out="l['default_code']"/>
+                                        <t t-if="l['default_code'] and l['barcode']"> / </t>
+                                        <span t-out="l['barcode']"/>
+                                    </td>
+                                    <td t-out="l['hsn']"/>
+                                    <td class="text-end" t-out="'%g' % l['qty']"/>
+                                    <td t-out="l['uom']"/>
+                                    <td class="text-end" t-out="l['cost']" t-options="{'widget': 'monetary', 'display_currency': cur}"/>
+                                    <td class="text-end" t-out="l['value']" t-options="{'widget': 'monetary', 'display_currency': cur}"/>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr style="font-weight: bold;">
+                                    <td colspan="4" class="text-end">TOTAL</td>
+                                    <td class="text-end" t-out="'%g' % sum(l['qty'] for l in lines)"/>
+                                    <td colspan="2"/>
+                                    <td class="text-end" t-out="sum(l['value'] for l in lines)" t-options="{'widget': 'monetary', 'display_currency': cur}"/>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <p t-if="o.note"><strong>Note:</strong> <span t-out="o.note"/></p>
+                        <p class="text-muted" style="font-size: 10px;">Value is at product cost price, for stock movement record only. Not a tax invoice.</p>
+
+                        <table class="table table-borderless mt-5">
+                            <tr>
+                                <td class="text-center" style="width: 33%;">______________________<br/>Dispatched By</td>
+                                <td class="text-center" style="width: 33%;">______________________<br/>Checked By</td>
+                                <td class="text-center" style="width: 33%;">______________________<br/>Received By (Store)</td>
+                            </tr>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

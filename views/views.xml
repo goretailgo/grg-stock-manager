@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_warehouse_form_grg_transfer" model="ir.ui.view">
+        <field name="name">stock.warehouse.form.grg.transfer</field>
+        <field name="model">stock.warehouse</field>
+        <field name="inherit_id" ref="stock.view_warehouse"/>
+        <field name="arch" type="xml">
+            <field name="code" position="after">
+                <field name="grg_is_central"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_users_form_grg_transfer" model="ir.ui.view">
+        <field name="name">res.users.form.grg.transfer</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page name="grg_stock_transfer" string="Stock Transfer API">
+                    <group>
+                        <field name="grg_source_warehouse_id"/>
+                    </group>
+                </page>
+                <page name="grg_pos_access" string="POS Access">
+                    <group>
+                        <field name="grg_pos_config_ids" widget="many2many_tags"
+                               options="{'no_create': True}"/>
+                    </group>
+                    <div class="text-muted">Empty = user can access all Point of Sale shops.</div>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
