@@ -56,11 +56,11 @@ class GrgStockTransferApi(http.Controller):
     # 2) products + available qty in source warehouse
     @http.route(BASE + '/products', methods=['GET'], **ROUTE)
     def products(self, search=None, barcode=None, in_stock_only=None, limit=50, offset=0,
-                 source_warehouse_id=None, **kw):
+                 source_warehouse_id=None, warehouse_id=None, **kw):
         return self._run(lambda: self._model().grg_transfer_products(
             search=search, barcode=barcode, in_stock_only=_truthy(in_stock_only, True),
             limit=limit, offset=offset, company_id=self._company_id(),
-            source_warehouse_id=source_warehouse_id or None))
+            warehouse_id=warehouse_id or source_warehouse_id or None))
 
     # 3) transfer list of products in one go
     @http.route(BASE + '/transfer', methods=['POST'], **ROUTE)

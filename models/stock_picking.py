@@ -125,9 +125,12 @@ class StockPicking(models.Model):
     @api.model
     def grg_transfer_products(self, search=None, barcode=None, product_ids=None,
                               in_stock_only=True, limit=50, offset=0, company_id=None,
-                              source_warehouse_id=None):
+                              source_warehouse_id=None, warehouse_id=None):
+        warehouse_id = warehouse_id or source_warehouse_id
+        if not warehouse_id:
+            raise UserError(_('warehouse_id is required.'))
         model, company = self._grg_env(company_id)
-        src = model._grg_pick_source(company, source_warehouse_id)
+        src = model._grg_pick_source(company, warehouse_id)
         loc = src.lot_stock_id
         domain = [('is_storable', '=', True), ('company_id', 'in', [False, company.id])]
         if barcode:

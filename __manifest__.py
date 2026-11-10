@@ -1,6 +1,6 @@
 {
     'name': 'GRG Stock Transfer API',
-    'version': '19.0.1.4.0',
+    'version': '19.0.1.5.0',
     'summary': 'Central warehouse to store stock transfer APIs (Bearer + JSON-RPC) with PDF report, and per-user POS access',
     'author': 'GoRetailGo',
     'category': 'Inventory',
