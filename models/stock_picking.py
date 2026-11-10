@@ -104,7 +104,7 @@ class StockPicking(models.Model):
         return Product, 'item without product_id/barcode/default_code'
 
     # ------------------------------------------------------------------
-    # API 1: context (source auto-selected from the logged-in user, destinations)
+    # API 1: context (admin only): all warehouses, the admin's own warehouse is default
     # ------------------------------------------------------------------
     @api.model
     def grg_transfer_context(self, company_id=None):
@@ -112,16 +112,11 @@ class StockPicking(models.Model):
         model, company = self._grg_env(company_id)
         src = model._grg_source_warehouse(company)
         all_wh = model.env['stock.warehouse'].search([('company_id', '=', company.id)], order='sequence, id')
-        dests = model.env['stock.warehouse'].search(
-            [('company_id', '=', company.id), ('id', '!=', src.id)], order='sequence, id')
         user = model.env.user
         return {
             'user': {'id': user.id, 'name': user.name, 'login': user.login},
             'company': {'id': company.id, 'name': company.name, 'currency': company.currency_id.name},
-            'source_warehouse': model._grg_wh_dict(src),
-            'destination_warehouses': [model._grg_wh_dict(w) for w in dests],
-            # admin can pick any of these as source_warehouse_id / dest_warehouse_id
-            'warehouses': [model._grg_wh_dict(w) for w in all_wh],
+            'warehouses': [dict(model._grg_wh_dict(w), default=(w == src)) for w in all_wh],
         }
 
     # ------------------------------------------------------------------
