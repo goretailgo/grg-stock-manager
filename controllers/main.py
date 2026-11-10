@@ -48,9 +48,9 @@ class GrgStockTransferApi(http.Controller):
             request.env.cr.rollback()
             return request.make_json_response({'ok': False, 'error': str(e.args[0])}, status=400)
 
-    # 1) logged-in user, company, auto source warehouse, destination list
-    @http.route(BASE + '/context', methods=['GET'], **ROUTE)
-    def context(self, **kw):
+    # 1) logged-in admin, company, all warehouses (admin's own one has default=true)
+    @http.route(BASE + '/get-warehouses', methods=['GET'], **ROUTE)
+    def get_warehouses(self, **kw):
         return self._run(lambda: self._model().grg_transfer_context(company_id=self._company_id()))
 
     # 2) products + available qty in source warehouse
